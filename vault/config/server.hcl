@@ -6,10 +6,13 @@ listener "tcp" {
 }
 
 storage "file" {
-  path = "/vault/data"
+  path = "/workspaces/vault-monitoring/vault/data"
 }
 
 telemetry {
   disable_hostname = true
   prometheus_retention_time = "12h"
 }
+
+ui = true
+disable_mlock = true

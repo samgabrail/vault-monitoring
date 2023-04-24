@@ -5,19 +5,20 @@ volumes:
   grafana_data: {}
 
 services:
-  vault-server:
-    image: vault:1.13.1
-    ports:
-      - "8200:8200"
-    volumes:
-      - ./vault/config:/vault/config
-      - ./vault/data:/vault/data
-    # environment:
-    #   VAULT_ADDR: "http://0.0.0.0:8200"
-    #   VAULT_DEV_ROOT_TOKEN_ID: "root"
-    cap_add:
-      - IPC_LOCK
-    entrypoint: vault server -config=/vault/config/server.hcl
+  # vault-server:
+  #   image: vault:1.13.1
+  #   labels:
+  #     logging: "promtail"
+  #     logging_jobname: "vaultoperationlogs"
+  #   ports:
+  #     - "8200:8200"
+  #   volumes:
+  #     - ./vault/config:/vault/config
+  #     - ./vault/data:/vault/data
+  #     # - ./promtail/logs/vault-audit.log:/var/log/vault-audit.log
+  #   cap_add:
+  #     - IPC_LOCK
+  #   entrypoint: vault server -config=/vault/config/server.hcl
   prometheus:
     image: prom/prometheus
     restart: always
@@ -98,8 +99,6 @@ services:
     image: grafana/loki:2.8.0
     volumes:
       - ./loki/config:/mnt/config
-      # - ./data/loki-data:/tmp/loki
-      # - ./data/loki-wal:/tmp/wal
     ports:
       - 3100:3100
     command: -config.file=/etc/loki/local-config.yaml
@@ -108,8 +107,13 @@ services:
   promtail:
     image: grafana/promtail:2.8.0
     volumes:
-      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail/config.yml:/etc/promtail/config.yml
+      - ./promtail/logs/vault-audit.log:/var/log/vault-audit.log
     ports:
       - 9080:9080
     command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
     restart: "always"

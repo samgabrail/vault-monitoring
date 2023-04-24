@@ -5,6 +5,8 @@
 			"version": "1.13.1"
 		}
 	},
+	"postCreateCommand": "/bin/bash -i -c .devcontainer/startup_script.sh",
+	"postAttachCommand": "docker compose up -d",
 	"hostRequirements": {
 		"cpus": 4,
 		"memory": "8gb",
