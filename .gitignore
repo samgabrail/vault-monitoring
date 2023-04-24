@@ -34,3 +34,4 @@ override.tf.json
 terraform.rc
 prometheus/prometheus-token
 vault/data/*
+vault/logs/*
