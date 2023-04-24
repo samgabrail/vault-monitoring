@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-
+mkdir -p /workspaces/vault-monitoring/vault/logs/
+touch /workspaces/vault-monitoring/vault/logs/vault.log
 vault server -config=/workspaces/vault-monitoring/vault/config/server.hcl > /workspaces/vault-monitoring/vault/logs/vault.log 2>&1 &
 export VAULT_ADDR=http://127.0.0.1:8200
 export LEARN_VAULT=/tmp/learn-vault-monitoring
