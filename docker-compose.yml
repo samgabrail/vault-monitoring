@@ -8,7 +8,7 @@ services:
   vault-server:
     image: vault:1.13.1
     ports:
-      - "8209:8209"
+      - "8200:8200"
     volumes:
       - ./vault/config:/vault/config
       - ./vault/data:/vault/data
