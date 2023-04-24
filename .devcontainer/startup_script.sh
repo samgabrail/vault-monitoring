@@ -4,8 +4,11 @@ vault server -config=/workspaces/vault-monitoring/vault/config/server.hcl > /wor
 export VAULT_ADDR=http://127.0.0.1:8200
 export LEARN_VAULT=/tmp/learn-vault-monitoring
 mkdir -p /tmp/learn-vault-monitoring
+sleep 5
 vault operator init -key-shares=1 -key-threshold=1 | head -n3 | cat > $LEARN_VAULT/.vault-init
+sleep 10
 vault operator unseal $(grep 'Unseal Key 1' $LEARN_VAULT/.vault-init | awk '{print $NF}')
+sleep 5
 vault login -no-print $(grep 'Initial Root Token' $LEARN_VAULT/.vault-init | awk '{print $NF}')
 
 ### Create a Vault Policy for Prometheus
@@ -21,10 +24,10 @@ EOF
 vault token create \
   -field=token \
   -policy prometheus-metrics \
-  > prometheus/prometheus-token
+  > /workspaces/vault-monitoring/prometheus/prometheus-token
 
 ### Enable Audit Logs
-
+sleep 5
 vault audit enable file file_path=/workspaces/vault-monitoring/vault/logs/vault-audit.log
 
 ### Start the Monitoring stack
