@@ -1,0 +1,8 @@
+{
+	"image": "mcr.microsoft.com/devcontainers/universal:2",
+	"features": {
+		"ghcr.io/devcontainers-contrib/features/vault-asdf:2": {
+			"version": "1.13.1"
+		}
+	}
+}
