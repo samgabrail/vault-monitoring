@@ -9,25 +9,17 @@ clients:
   - url: http://loki:3100/loki/api/v1/push
 
 scrape_configs:
-  - job_name: vault_system_logs
-    docker_sd_configs:
-      - host: unix:///var/run/docker.sock
-        refresh_interval: 5s
-        filters:
-          - name: label
-            values: ["logging=promtail"]
-    relabel_configs:
-      - source_labels: ['__meta_docker_container_name']
-        regex: '/(.*)'
-        target_label: 'container'
-      - source_labels: ['__meta_docker_container_log_stream']
-        target_label: 'logstream'
-      - source_labels: ['__meta_docker_container_label_logging_jobname']
-        target_label: 'job'
   - job_name: vault_audit_logs
     static_configs:
     - targets:
         - localhost
       labels:
-        job: varlogs
-        __path__: /var/log/vault-audit.log
+        job: auditlogs
+        __path__: /var/log/vault/vault-audit.log
+  - job_name: vault_system_operational_logs
+    static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: systemlogs
+        __path__: /var/log/vault/vault.log

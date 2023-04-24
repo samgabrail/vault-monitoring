@@ -75,7 +75,7 @@ scrape_configs:
     authorization:
       credentials_file: /etc/prometheus/prometheus-token
     static_configs:
-    - targets: ['vault-server:8200']
+    - targets: ['host.docker.internal:8200']
 
 #  - job_name: 'pushgateway'
 #    scrape_interval: 10s

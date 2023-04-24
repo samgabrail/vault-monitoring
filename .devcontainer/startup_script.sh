@@ -1,108 +1,32 @@
 #!/usr/bin/env bash
-export vault_version=1.13.1
-# install packages
 
-curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
-apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-apt-get update
-apt-get install -y vault=${vault_version}-* awscli jq
+vault server -config=/workspaces/vault-monitoring/vault/config/server.hcl > /workspaces/vault-monitoring/vault/logs/vault.log 2>&1 &
+export VAULT_ADDR=http://127.0.0.1:8200
+export LEARN_VAULT=/tmp/learn-vault-monitoring
+mkdir -p /tmp/learn-vault-monitoring
+vault operator init -key-shares=1 -key-threshold=1 | head -n3 | cat > $LEARN_VAULT/.vault-init
+vault operator unseal $(grep 'Unseal Key 1' $LEARN_VAULT/.vault-init | awk '{print $NF}')
+vault login -no-print $(grep 'Initial Root Token' $LEARN_VAULT/.vault-init | awk '{print $NF}')
 
-echo "Configuring system time"
-timedatectl set-timezone UTC
+### Create a Vault Policy for Prometheus
 
-# removing any default installation files from /opt/vault/tls/
-rm -rf /opt/vault/tls/*
-
-# /opt/vault/tls should be readable by all users of the system
-chmod 0755 /opt/vault/tls
-
-# vault-key.pem should be readable by the vault group only
-touch /opt/vault/tls/vault-key.pem
-chown root:vault /opt/vault/tls/vault-key.pem
-chmod 0640 /opt/vault/tls/vault-key.pem
-
-cat << EOF > /etc/vault.d/vault.hcl
-ui = true
-disable_mlock = true
-
-storage "raft" {
-  path    = "/opt/vault/data"
-  node_id = "node1"
-}
-
-cluster_addr = "https://127.0.0.1:8201"
-api_addr = "https://127.0.0.1:8200"
-
-listener "tcp" {
-  address            = "0.0.0.0:8200"
-  tls_disable        = true
-  telemetry {
-    unauthenticated_metrics_access = true
-  }
-}
-
-telemetry {
-  unauthenticated_metrics_access = true
-  prometheus_retention_time = "1h"
-  disable_hostname = true
-}
-
-EOF
-
-# vault.hcl should be readable by the vault group only
-chown root:root /etc/vault.d
-chown root:vault /etc/vault.d/vault.hcl
-chmod 640 /etc/vault.d/vault.hcl
-
-# Add monitoring to a static file for DataDog to pick up
-touch /var/log/vault-audit.log
-chmod 644 /var/log/vault-audit.log
-chown vault:vault /var/log/vault-audit.log
-touch /var/log/vault.log
-chmod 644 /var/log/vault.log
-chown vault:vault /var/log/vault.log
-
-sed -i 's|^ExecStart=/usr/bin/vault server -config=/etc/vault.d/vault.hcl$|ExecStart=/usr/bin/vault server -config=/etc/vault.d/vault.hcl -log-level="trace"|' /lib/systemd/system/vault.service
-sed -i '/^\[Service\]$/a StandardOutput=append:/var/log/vault.log\nStandardError=append:/var/log/vault.log' /lib/systemd/system/vault.service
-
-# Add Log Rotate to rotate log files
-apt install logrotate -y
-
-cat << EOF > /etc/logrotate.d/vault-audit.log
-/var/log/vault-audit.log {
-rotate 7
-daily
-size 1G
-#Do not execute rotate if the log file is empty.
-notifempty
-missingok
-compress
-#Set compress on next rotate cycle to prevent entry loss when performing compression.
-delaycompress
-copytruncate
-extension log
-dateext
-dateformat %Y-%m-%d.
+vault policy write prometheus-metrics - << EOF
+path "/sys/metrics" {
+  capabilities = ["read"]
 }
 EOF
 
-cat << EOF > /etc/logrotate.d/vault.log
-/var/log/vault.log {
-rotate 7
-daily
-size 1G
-#Do not execute rotate if the log file is empty.
-notifempty
-missingok
-compress
-#Set compress on next rotate cycle to prevent entry loss when performing compression.
-delaycompress
-copytruncate
-extension log
-dateext
-dateformat %Y-%m-%d.
-}
-EOF
+### Create a Vault Token For Prometheus
 
-systemctl enable vault
-systemctl start vault
+vault token create \
+  -field=token \
+  -policy prometheus-metrics \
+  > prometheus/prometheus-token
+
+### Enable Audit Logs
+
+vault audit enable file file_path=/workspaces/vault-monitoring/vault/logs/vault-audit.log
+
+### Start the Monitoring stack
+
+docker compose up -d

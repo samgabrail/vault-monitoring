@@ -7,7 +7,7 @@ A guide to teach how to monitor HashiCorp Vault with Prometheus, Loki, and Grafa
 ### Initialize and Unseal Vault
 
 ```bash
-vault server -config=/workspaces/vault-monitoring/vault/config/server.hcl
+vault server -config=/workspaces/vault-monitoring/vault/config/server.hcl > /workspaces/vault-monitoring/vault/logs/vault.log 2>&1 &
 export VAULT_ADDR=http://127.0.0.1:8200
 export LEARN_VAULT=/tmp/learn-vault-monitoring
 mkdir -p /tmp/learn-vault-monitoring
@@ -38,12 +38,5 @@ vault token create \
 ### Enable Audit Logs
 
 ```bash
-vault audit enable file file_path=/var/log/vault-audit.log
+vault audit enable file file_path=/workspaces/vault-monitoring/vault/logs/vault-audit.log
 ```
-
-
-
-
-apk add wget
-wget https://github.com/grafana/loki/releases/download/v2.8.0/promtail-linux-amd64.zip
-

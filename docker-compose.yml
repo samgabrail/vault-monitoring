@@ -5,20 +5,6 @@ volumes:
   grafana_data: {}
 
 services:
-  # vault-server:
-  #   image: vault:1.13.1
-  #   labels:
-  #     logging: "promtail"
-  #     logging_jobname: "vaultoperationlogs"
-  #   ports:
-  #     - "8200:8200"
-  #   volumes:
-  #     - ./vault/config:/vault/config
-  #     - ./vault/data:/vault/data
-  #     # - ./promtail/logs/vault-audit.log:/var/log/vault-audit.log
-  #   cap_add:
-  #     - IPC_LOCK
-  #   entrypoint: vault server -config=/vault/config/server.hcl
   prometheus:
     image: prom/prometheus
     restart: always
@@ -32,6 +18,8 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
       - 9090:9090
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - cadvisor:cadvisor
       - alertmanager:alertmanager
@@ -107,12 +95,12 @@ services:
   promtail:
     image: grafana/promtail:2.8.0
     volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./promtail/config.yml:/etc/promtail/config.yml
-      - ./promtail/logs/vault-audit.log:/var/log/vault-audit.log
+      - /workspaces/vault-monitoring/vault/logs:/var/log/vault
     ports:
       - 9080:9080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: -config.file=/etc/promtail/config.yml
     depends_on:
       - loki
