@@ -10,8 +10,8 @@ mkdir -p /workspaces/vault-monitoring/vault/logs/
 touch /workspaces/vault-monitoring/vault/logs/vault.log
 vault server -config=/workspaces/vault-monitoring/vault/config/server.hcl > /workspaces/vault-monitoring/vault/logs/vault.log 2>&1 &
 export VAULT_ADDR=http://127.0.0.1:8200
-export LEARN_VAULT=/tmp/learn-vault-monitoring
-mkdir -p /tmp/learn-vault-monitoring
+export LEARN_VAULT=/workspaces/vault-monitoring/vault/
+mkdir -p /workspaces/vault-monitoring/vault/
 sleep 5
 vault operator init -key-shares=1 -key-threshold=1 | head -n3 | cat > $LEARN_VAULT/.vault-init
 sleep 10
@@ -45,5 +45,5 @@ docker compose up -d
 echo -e "${Gre}✔ Script Completed"
 echo -e "${Gre}Run the following commands to get started:"
 echo -e "${RCol}export VAULT_ADDR=http://127.0.0.1:8200"
-echo 'export LEARN_VAULT=/tmp/learn-vault-monitoring'
+echo 'export LEARN_VAULT=/workspaces/vault-monitoring/vault/'
 echo "vault login -no-print \$(grep 'Initial Root Token' \$LEARN_VAULT/.vault-init | awk '{print \$NF}')"

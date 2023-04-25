@@ -35,3 +35,4 @@ terraform.rc
 prometheus/prometheus-token
 vault/data/*
 vault/logs/*
+vault/.vault-init
