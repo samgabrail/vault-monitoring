@@ -20,9 +20,6 @@ services:
       - 9090:9090
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    links:
-      - cadvisor:cadvisor
-      - alertmanager:alertmanager
     depends_on:
       - cadvisor
 
