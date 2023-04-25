@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+## Configure Vault
+
+### Initialize and Unseal Vault
+
 mkdir -p /workspaces/vault-monitoring/vault/logs/
 touch /workspaces/vault-monitoring/vault/logs/vault.log
 vault server -config=/workspaces/vault-monitoring/vault/config/server.hcl > /workspaces/vault-monitoring/vault/logs/vault.log 2>&1 &
@@ -31,6 +36,6 @@ vault token create \
 sleep 5
 vault audit enable file file_path=/workspaces/vault-monitoring/vault/logs/vault-audit.log
 
-### Start the Monitoring stack
+## Start the Monitoring stack
 
 docker compose up -d

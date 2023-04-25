@@ -6,7 +6,7 @@
 		}
 	},
 	// "postCreateCommand": "/bin/bash -i -c .devcontainer/startup_script.sh",
-	"postAttachCommand": "/bin/bash -i -c .devcontainer/startup_script.sh",
+	// "postAttachCommand": "/bin/bash -i -c .devcontainer/startup_script.sh",
 	"hostRequirements": {
 		"cpus": 4,
 		"memory": "8gb",
