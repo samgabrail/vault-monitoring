@@ -44,7 +44,7 @@ services:
     image: prom/alertmanager
     restart: always
     ports:
-      - 9094:9094
+      - 9093:9093
     volumes:
       - ./alertmanager/:/etc/alertmanager/
     command:
